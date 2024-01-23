@@ -23,6 +23,11 @@ from numpy.linalg import norm
 import sys
 
 
+def vector_slope(vec):
+    assert len(vec) == 2
+    return abs(vec[1] / (vec[0] + 1e-8))
+
+
 class FCENetTargets:
     """Generate the ground truth targets of FCENet: Fourier Contour Embedding
     for Arbitrary-Shaped Text Detection.
@@ -104,17 +109,22 @@ class FCENetTargets:
         for i in range(1, n):
             current_line_len = i * delta_length
 
-            while current_line_len >= length_cumsum[current_edge_ind + 1]:
+            while current_edge_ind + 1 < len(
+                    length_cumsum) and current_line_len >= length_cumsum[
+                        current_edge_ind + 1]:
                 current_edge_ind += 1
+
             current_edge_end_shift = current_line_len - length_cumsum[
                 current_edge_ind]
+
+            if current_edge_ind >= len(length_list):
+                break
             end_shift_ratio = current_edge_end_shift / length_list[
                 current_edge_ind]
             current_point = line[current_edge_ind] + (line[current_edge_ind + 1]
                                                       - line[current_edge_ind]
                                                       ) * end_shift_ratio
             resampled_line.append(current_point)
-
         resampled_line.append(line[-1])
         resampled_line = np.array(resampled_line)
 
@@ -233,10 +243,9 @@ class FCENetTargets:
             head_inds = [head_start, head_end]
             tail_inds = [tail_start, tail_end]
         else:
-            if self.vector_slope(points[1] - points[0]) + self.vector_slope(
-                    points[3] - points[2]) < self.vector_slope(points[
-                        2] - points[1]) + self.vector_slope(points[0] - points[
-                            3]):
+            if vector_slope(points[1] - points[0]) + vector_slope(points[
+                    3] - points[2]) < vector_slope(points[2] - points[
+                        1]) + vector_slope(points[0] - points[3]):
                 horizontal_edge_inds = [[0, 1], [2, 3]]
                 vertical_edge_inds = [[3, 0], [1, 2]]
             else:
@@ -325,6 +334,8 @@ class FCENetTargets:
             resampled_top_line, resampled_bot_line = self.resample_sidelines(
                 top_line, bot_line, self.resample_step)
             resampled_bot_line = resampled_bot_line[::-1]
+            if len(resampled_top_line) != len(resampled_bot_line):
+                continue
             center_line = (resampled_top_line + resampled_bot_line) / 2
 
             line_head_shrink_len = norm(resampled_top_line[0] -
@@ -574,7 +585,7 @@ class FCENetTargets:
         lv_ignore_polys = [[] for i in range(len(lv_size_divs))]
         level_maps = []
         for poly in text_polys:
-            polygon = np.array(poly, dtype=np.int).reshape((1, -1, 2))
+            polygon = np.array(poly, dtype=np.int32).reshape((1, -1, 2))
             _, _, box_w, box_h = cv2.boundingRect(polygon)
             proportion = max(box_h, box_w) / (h + 1e-8)
 
@@ -583,7 +594,7 @@ class FCENetTargets:
                     lv_text_polys[ind].append(poly / lv_size_divs[ind])
 
         for ignore_poly in ignore_polys:
-            polygon = np.array(ignore_poly, dtype=np.int).reshape((1, -1, 2))
+            polygon = np.array(ignore_poly, dtype=np.int32).reshape((1, -1, 2))
             _, _, box_w, box_h = cv2.boundingRect(polygon)
             proportion = max(box_h, box_w) / (h + 1e-8)
 

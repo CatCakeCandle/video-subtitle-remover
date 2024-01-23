@@ -11,7 +11,7 @@
 # included LICENSE file, or visit one of the above pages for details.
 #
 """The ``scenedetect`` module comes with helper functions to simplify common use cases.
-:func:`scene_detect` can be used to perform scene detection on a video by path.  :func:`open_video`
+:func:`detect` can be used to perform scene detection on a video by path.  :func:`open_video`
 can be used to open a video for a
 :class:`SceneManager <scenedetect.scene_manager.SceneManager>`.
 """
@@ -31,14 +31,19 @@ except ModuleNotFoundError as ex:
     ) from ex
 
 # Commonly used classes/functions exported under the `scenedetect` namespace for brevity.
-from backend.scenedetect.platform import init_logger
-from backend.scenedetect.frame_timecode import FrameTimecode
-from backend.scenedetect.video_stream import VideoStream, VideoOpenFailure
-from backend.scenedetect.scene_detector import SceneDetector
-from backend.scenedetect.backends import (AVAILABLE_BACKENDS, VideoStreamCv2, VideoStreamAv,
+from scenedetect.platform import init_logger
+from scenedetect.frame_timecode import FrameTimecode
+from scenedetect.video_stream import VideoStream, VideoOpenFailure
+from scenedetect.video_splitter import split_video_ffmpeg, split_video_mkvmerge
+from scenedetect.scene_detector import SceneDetector
+from scenedetect.detectors import ContentDetector, AdaptiveDetector, ThresholdDetector
+from scenedetect.backends import (AVAILABLE_BACKENDS, VideoStreamCv2, VideoStreamAv,
                                   VideoStreamMoviePy, VideoCaptureAdapter)
-from backend.scenedetect.stats_manager import StatsManager, StatsFileCorrupt
-from backend.scenedetect.scene_manager import SceneManager, save_images
+from scenedetect.stats_manager import StatsManager, StatsFileCorrupt
+from scenedetect.scene_manager import SceneManager, save_images
+
+# [DEPRECATED] DO NOT USE.
+from scenedetect.video_manager import VideoManager
 
 # Used for module identification and when printing version & about info
 # (e.g. calling `scenedetect version` or `scenedetect about`).
@@ -101,7 +106,7 @@ def open_video(
     raise last_error
 
 
-def scene_detect(
+def detect(
     video_path: str,
     detector: SceneDetector,
     stats_file_path: Optional[str] = None,

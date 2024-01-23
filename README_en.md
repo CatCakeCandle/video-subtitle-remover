@@ -3,7 +3,7 @@
 ## Project Introduction
 
 ![License](https://img.shields.io/badge/License-Apache%202-red.svg)
-![python version](https://img.shields.io/badge/Python-3.8+-blue.svg)
+![python version](https://img.shields.io/badge/Python-3.11+-blue.svg)
 ![support os](https://img.shields.io/badge/OS-Windows/macOS/Linux-green.svg)
 
 Video-subtitle-remover (VSR) is an AI-based software that removes hardcoded subtitles from videos. It mainly implements the following functionalities:
@@ -18,134 +18,74 @@ Video-subtitle-remover (VSR) is an AI-based software that removes hardcoded subt
 
 > Download the .zip package directly, extract, and run it. If it cannot run, follow the tutorial below to try installing the conda environment and running the source code.
 
-**Download Links:**
 
-Windows GPU Version v1.1.0 (GPU):
+**forked from [YaoFANGUK/video-subtitle-remover](https://github.com/YaoFANGUK/video-subtitle-remover)** 
 
-- Baidu Cloud Disk: <a href="https://pan.baidu.com/s/1zR6CjRztmOGBbOkqK8R1Ng?pwd=vsr1">vsr_windows_gpu_v1.1.0.zip</a> Extraction Code: **vsr1**
+On the basis of the original project, it supports CPU (M1) , ~~GPU (AMD)~~ running, and some minor changes.
 
-- Google Drive: <a href="https://drive.google.com/drive/folders/1NRgLNoHHOmdO4GxLhkPbHsYfMOB_3Elr?usp=sharing">vsr_windows_gpu_v1.1.0.zip</a>
-
-> For use only by users with Nvidia graphics cards (AMD graphics cards are not supported).
-
+ 
 ## Demonstration
 
-- GUI:
+- GUI：
 
 <p style="text-align:center;"><img src="https://github.com/YaoFANGUK/video-subtitle-remover/raw/main/design/demo2.gif" alt="demo2.gif"/></p>
 
-- <a href="https://b23.tv/guEbl9C">Click to view demo video👇</a>
+- <a href="https://b23.tv/guEbl9C">点击查看演示视频👇</a>
 
 <p style="text-align:center;"><a href="https://b23.tv/guEbl9C"><img src="https://github.com/YaoFANGUK/video-subtitle-remover/raw/main/design/demo.gif" alt="demo.gif"/></a></p>
 
 ## Source Code Usage Instructions
 
-> **Do not use this project without an Nvidia graphics card**. The minimum requirements are:
->
-> **GPU**: GTX 1060 or higher graphics card
-> 
-> CPU: Supports AVX instruction set
+this branch runs on CPU (M1 Apple M1 16G) , ~~GPU (AMD)~~  
 
-#### 1. Download and install Miniconda
+#### 1. Download and install conda(Miniconda or Anaconda)
 
-- Windows: <a href="https://repo.anaconda.com/miniconda/Miniconda3-py38_4.11.0-Windows-x86_64.exe">Miniconda3-py38_4.11.0-Windows-x86_64.exe</a>
+- Windows: <a href="https://repo.anaconda.com/miniconda/Miniconda3-latest-Windows-x86_64.exe">Miniconda3-latest-Windows-x86_64.exe</a>
+- Linux: <a href="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh">Miniconda3-latest-Linux-x86_64.sh</a>
+- Linux: <a href="https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-x86_64.sh">Miniconda3-latest-MacOSX-x86_64.sh</a>
 
-- Linux: <a href="https://repo.anaconda.com/miniconda/Miniconda3-py38_4.11.0-Linux-x86_64.sh">Miniconda3-py38_4.11.0-Linux-x86_64.sh</a>
 
 #### 2. Create and activate a virtual environment
 
-(1) Switch to the source code directory:
-
+1. Switch to the source code directory：
 ```shell
 cd <source_code_directory>
 ```
-
-> For example, if your source code is in the `tools` folder on drive D, and the source code folder name is `video-subtitle-remover`, enter `cd D:/tools/video-subtitle-remover-main`.
-
-(2) Create and activate the conda environment:
-
+> For example, if your source code is in a user directory and the folder name of the source code is video-subtitle-remover, enter cd ~/video-subtitle-remover-main'''
+2. Create and activate the conda environment:
 ```shell
-conda create -n videoEnv python=3.8
+conda create -n video-subtitle-remover python=3.11.7
 ```
 
 ```shell
-conda activate videoEnv
+conda activate video-subtitle-remover
 ```
 
 #### 3. Install dependencies
 
-Please make sure you have already installed Python 3.8+, use conda to create a project virtual environment and activate the environment (it is recommended to create a virtual environment to run to avoid subsequent problems).
+ 
 
-  - Install **CUDA** and **cuDNN**
+- 安装CPU版本Paddlepaddle:
 
-      <details>
-          <summary>Linux</summary>
-          <h5>(1) Download CUDA 11.7</h5>
-          <pre><code>wget https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_515.43.04_linux.run</code></pre>
-          <h5>(2) Install CUDA 11.7</h5>
-          <pre><code>sudo sh cuda_11.7.0_515.43.04_linux.run</code></pre>
-          <p>1. Input accept</p>
-          <img src="https://i.328888.xyz/2023/03/31/iwVoeH.png" width="500" alt="">
-          <p>2. make sure CUDA Toolkit 11.7 is chosen (If you have already installed driver, do not select Driver)</p>
-          <img src="https://i.328888.xyz/2023/03/31/iwVThJ.png" width="500" alt="">
-          <p>3. Add environment variables</p>
-          <p>add the following content in  <strong>~/.bashrc</strong></p>
-          <pre><code># CUDA
-      export PATH=/usr/local/cuda-11.7/bin${PATH:+:${PATH}}
-      export LD_LIBRARY_PATH=/usr/local/cuda-11.7/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}</code></pre>
-          <p>Make sure it works</p>
-          <pre><code>source ~/.bashrc</code></pre>
-          <h5>(3) Download cuDNN 8.4.1</h5>
-          <p><a href="https://github.com/YaoFANGUK/video-subtitle-extractor/releases/download/1.0.0/cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz">cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz</a></p>
-          <h5>(4) Install cuDNN 8.4.1</h5>
-          <pre><code> tar -xf cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive.tar.xz
-     mv cudnn-linux-x86_64-8.4.1.50_cuda11.6-archive cuda
-     sudo cp ./cuda/include/* /usr/local/cuda-11.7/include/
-     sudo cp ./cuda/lib/* /usr/local/cuda-11.7/lib64/
-     sudo chmod a+r /usr/local/cuda-11.7/lib64/*
-     sudo chmod a+r /usr/local/cuda-11.7/include/*</code></pre>
-      </details>
-
-      <details>
-          <summary>Windows</summary>
-          <h5>(1) Download CUDA 11.7</h5>
-          <a href="https://developer.download.nvidia.com/compute/cuda/11.7.0/local_installers/cuda_11.7.0_516.01_windows.exe">cuda_11.7.0_516.01_windows.exe</a>
-          <h5>(2) Install CUDA 11.7</h5>
-          <h5>(3) Download cuDNN 8.2.4</h5>
-          <p><a href="https://github.com/YaoFANGUK/video-subtitle-extractor/releases/download/1.0.0/cudnn-windows-x64-v8.2.4.15.zip">cudnn-windows-x64-v8.2.4.15.zip</a></p>
-          <h5>(4) Install cuDNN 8.2.4</h5>
-          <p>
-             unzip "cudnn-windows-x64-v8.2.4.15.zip", then move all files in "bin, include, lib" in cuda 
-      directory to C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.7\
-          </p>
-      </details>
-
-
-- Install GPU version of Paddlepaddle:
-  - windows:
+  - * macOS:
 
       ```shell 
-      python -m pip install paddlepaddle-gpu==2.4.2.post117 -f https://www.paddlepaddle.org.cn/whl/windows/mkl/avx/stable.html
+      conda install paddlepaddle==2.6.0 --channel https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/Paddle/
+    
       ```
+    * or Choose the installation based on the operating system, installation method, and computing platform:
+      [quick install](https://www.paddlepaddle.org.cn/install/quick?docurl=/documentation/docs/zh/install/pip/macos-pip.html)
 
-  - Linux:
-
-      ```shell
-      python -m pip install paddlepaddle-gpu==2.4.2.post117 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
-      ```
-
-- Install GPU version of Pytorch:
-
-  ```shell 
-  conda install pytorch==2.1.0 torchvision==0.16.0 pytorch-cuda=11.8 -c pytorch -c nvidia
-  ```
-  or use
-  
-  ```shell 
-  pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
+- install the cpu version of pytorch:
+      
+  ```shell
+  conda install pytorch::pytorch torchvision torchaudio -c pytorch
   ```
 
-- Install other dependencies:
+  - or [selectt OS, Package, And so.. insta](https://pytorch.org/get-started/locally/)
+ 
+
+- Install additional dependencies:
 
   ```shell
   pip install -r requirements.txt
@@ -154,7 +94,7 @@ Please make sure you have already installed Python 3.8+, use conda to create a p
 
 #### 4. Run the program
 
-- Run the graphical interface
+- Run the GUI
 
 ```shell
 python gui.py
@@ -170,22 +110,24 @@ python ./backend/main.py
 
 1. How to deal with slow removal speed
 
+
 You can greatly increase the removal speed by modifying the parameters in backend/config.py:
 
 ```python
-MODE = InpaintMode.STTN  # Set to STTN algorithm
-STTN_SKIP_DETECTION = True # Skip subtitle detection
+MODE = InpaintMode.STTN  # 设置为STTN算法
+STTN_SKIP_DETECTION = True # 跳过字幕检测，跳过后可能会导致要去除的字幕遗漏或者误伤不需要去除字幕的视频帧
 ```
 
 2. What to do if the video removal results are not satisfactory
 
 Modify the values in backend/config.py and try different removal algorithms. Here is an introduction to the algorithms:
 
-> - **InpaintMode.STTN** algorithm: Good for live-action videos and fast in speed, capable of skipping subtitle detection
-> - **InpaintMode.LAMA** algorithm: Best for images and effective for animated videos, moderate speed, unable to skip subtitle detection
-> - **InpaintMode.PROPAINTER** algorithm: Consumes a significant amount of VRAM, slower in speed, works better for videos with very intense movement
+> - InpaintMode.STTN algorithm: Good for live-action videos and fast in speed, capable of skipping subtitle detection
+> - InpaintMode.LAMA algorithm: Best for images and effective for animated videos, moderate speed, unable to skip subtitle detection
+> - InpaintMode.PROPAINTER algorithm: Consumes a significant amount of VRAM, slower in speed, works better for videos with very intense movement
 
 - Using the STTN algorithm
+
 
 ```python
 MODE = InpaintMode.STTN  # Set to STTN algorithm
@@ -202,19 +144,4 @@ STTN_MAX_LOAD_NUM = 30
 ```python
 MODE = InpaintMode.LAMA  # Set to LAMA algorithm
 LAMA_SUPER_FAST = False  # Ensure quality
-```
-
-
-3. CondaHTTPError
-
-Place the .condarc file from the project in the user directory (C:/Users/<your_username>). If the file already exists in the user directory, overwrite it.
-
-Solution: https://zhuanlan.zhihu.com/p/260034241
-
-4. 7z file extraction error
-
-Solution: Upgrade the 7-zip extraction program to the latest version.
-
-```shell
-pip install torch==2.1.0 torchvision==0.16.0 --index-url https://download.pytorch.org/whl/cu118
 ```

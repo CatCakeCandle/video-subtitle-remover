@@ -50,7 +50,7 @@ processing videos, however they can also be used to process frames directly.
 # class DissolveDetector(SceneDetector):
 #    """Detects slow fades (dissolve cuts) via changes in the HSV colour space.
 #
-#    Detects slow fades only; to scene_detect fast cuts between content scenes, the
+#    Detects slow fades only; to detect fast cuts between content scenes, the
 #    ContentDetector should be used instead.
 #    """
 #
@@ -79,3 +79,5 @@ from backend.scenedetect.detectors.adaptive_detector import AdaptiveDetector
 
 # Algorithms being ported:
 #from scenedetect.detectors.motion_detector import MotionDetector
+class ContentDetector:
+    pass

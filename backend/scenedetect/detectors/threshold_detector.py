@@ -10,10 +10,10 @@
 # PySceneDetect is licensed under the BSD 3-Clause License; see the
 # included LICENSE file, or visit one of the above pages for details.
 #
-""":class:`ThresholdDetector` uses a set intensity as a threshold to scene_detect cuts, which are
+""":class:`ThresholdDetector` uses a set intensity as a threshold to detect cuts, which are
 triggered when the average pixel intensity exceeds or falls below this threshold.
 
-This detector is available from the command-line as the `scene_detect-threshold` command.
+This detector is available from the command-line as the `detect-threshold` command.
 """
 
 from enum import Enum
@@ -140,7 +140,7 @@ class ThresholdDetector(SceneDetector):
         # List of cuts to return.
         cut_list = []
 
-        # The metric used here to scene_detect scene breaks is the percent of pixels
+        # The metric used here to detect scene breaks is the percent of pixels
         # less than or equal to the threshold; however, since this differs on
         # user-supplied values, we supply the average pixel intensity as this
         # frame metric instead (to assist with manually selecting a threshold)

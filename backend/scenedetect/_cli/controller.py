@@ -19,12 +19,12 @@ import time
 from typing import Dict, List, Tuple, Optional
 from string import Template
 
-from scenedetect.detectors import AdaptiveDetector
-from scenedetect.frame_timecode import FrameTimecode
-from scenedetect.platform import get_and_create_path, get_file_name
-from scenedetect.scene_manager import save_images, write_scene_list, write_scene_list_html
-from scenedetect.video_splitter import split_video_mkvmerge, split_video_ffmpeg
-from scenedetect.video_stream import SeekError
+from backend.scenedetect.detectors import AdaptiveDetector
+from backend.scenedetect.frame_timecode import FrameTimecode
+from backend.scenedetect.platform import get_and_create_path, get_file_name
+from backend.scenedetect.scene_manager import save_images, write_scene_list, write_scene_list_html
+from backend.scenedetect.video_splitter import split_video_mkvmerge, split_video_ffmpeg
+from backend.scenedetect.video_stream import SeekError
 
 from scenedetect._cli.context import CliContext, check_split_video_requirements
 

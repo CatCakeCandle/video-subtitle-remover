@@ -87,7 +87,7 @@ examples for details.
 from typing import Dict, Type
 
 # OpenCV must be available at minimum.
-from backend.scenedetect.backends.opencv import VideoStreamCv2, VideoCaptureAdapter
+from scenedetect.backends.opencv import VideoStreamCv2, VideoCaptureAdapter
 
 try:
     from scenedetect.backends.pyav import VideoStreamAv

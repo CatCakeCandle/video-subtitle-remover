@@ -1,18 +1,23 @@
 import warnings
 from enum import Enum, unique
+
 warnings.filterwarnings('ignore')
 import os
 import torch
+import torch_directml
+
 import logging
 import platform
 import stat
-from fsplit.filesplit import Filesplit
+from filesplit.merge import Merge
 import paddle
+
 # ×××××××××××××××××××× [不要改] start ××××××××××××××××××××
 paddle.disable_signal_handler()
 logging.disable(logging.DEBUG)  # 关闭DEBUG日志的打印
 logging.disable(logging.WARNING)  # 关闭WARNING日志的打印
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_built() else "cpu")
+logging.info('Using device: %s',device)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 LAMA_MODEL_PATH = os.path.join(BASE_DIR, 'models', 'big-lama')
 STTN_MODEL_PATH = os.path.join(BASE_DIR, 'models', 'sttn', 'infer_model.pth')
@@ -23,33 +28,41 @@ DET_MODEL_PATH = os.path.join(DET_MODEL_BASE, MODEL_VERSION, 'ch_det')
 
 # 查看该路径下是否有模型完整文件，没有的话合并小文件生成完整文件
 if 'big-lama.pt' not in (os.listdir(LAMA_MODEL_PATH)):
-    fs = Filesplit()
-    fs.merge(input_dir=LAMA_MODEL_PATH)
+    fs = Merge(inputdir=LAMA_MODEL_PATH, outputdir=LAMA_MODEL_PATH, outputfilename='big-lama.pt')
+    fs.manfilename = 'fs_manifest.csv'
+    fs.merge()
 
 if 'inference.pdiparams' not in os.listdir(DET_MODEL_PATH):
-    fs = Filesplit()
-    fs.merge(input_dir=DET_MODEL_PATH)
+    fs = Merge(inputdir=DET_MODEL_PATH, outputdir=DET_MODEL_PATH, outputfilename='inference.pdiparams')
+    fs.manfilename = 'fs_manifest.csv'
+    fs.merge()
 
 if 'ProPainter.pth' not in os.listdir(VIDEO_INPAINT_MODEL_PATH):
-    fs = Filesplit()
-    fs.merge(input_dir=VIDEO_INPAINT_MODEL_PATH)
+    fs = Merge(inputdir=VIDEO_INPAINT_MODEL_PATH, outputdir=VIDEO_INPAINT_MODEL_PATH, outputfilename='ProPainter.pth')
+    fs.manfilename = 'fs_manifest.csv'
+    fs.merge()
 
 # 指定ffmpeg可执行程序路径
 sys_str = platform.system()
 if sys_str == "Windows":
     ffmpeg_bin = os.path.join('win_x64', 'ffmpeg.exe')
+    if 'ffmpeg.exe' not in os.listdir(os.path.join(BASE_DIR, '', 'ffmpeg', 'win_x64')):
+        fs = Merge(inputdir=os.path.join(BASE_DIR, '', 'ffmpeg', 'win_x64'),
+                   outputdir=os.path.join(BASE_DIR, '', 'ffmpeg', 'win_x64'), outputfilename='ffmpeg.exe')
+        fs.manfilename = 'fs_manifest.csv'
+        fs.merge()
 elif sys_str == "Linux":
     ffmpeg_bin = os.path.join('linux_x64', 'ffmpeg')
 else:
     ffmpeg_bin = os.path.join('macos', 'ffmpeg')
+
 FFMPEG_PATH = os.path.join(BASE_DIR, '', 'ffmpeg', ffmpeg_bin)
 
-if 'ffmpeg.exe' not in os.listdir(os.path.join(BASE_DIR, '', 'ffmpeg', 'win_x64')):
-    fs = Filesplit()
-    fs.merge(input_dir=os.path.join(BASE_DIR, '', 'ffmpeg', 'win_x64'))
 # 将ffmpeg添加可执行权限
 os.chmod(FFMPEG_PATH, stat.S_IRWXU + stat.S_IRWXG + stat.S_IRWXO)
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'True'
+
+
 # ×××××××××××××××××××× [不要改] end ××××××××××××××××××××
 
 

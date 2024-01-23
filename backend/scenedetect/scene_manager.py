@@ -91,14 +91,14 @@ import sys
 
 import cv2
 import numpy as np
-from backend.scenedetect._thirdparty.simpletable import (SimpleTableCell, SimpleTableImage, SimpleTableRow,
+from scenedetect._thirdparty.simpletable import (SimpleTableCell, SimpleTableImage, SimpleTableRow,
                                                  SimpleTable, HTMLPage)
 
-from backend.scenedetect.platform import (tqdm, get_and_create_path, get_cv2_imwrite_params, Template)
-from backend.scenedetect.frame_timecode import FrameTimecode
-from backend.scenedetect.video_stream import VideoStream
-from backend.scenedetect.scene_detector import SceneDetector, SparseSceneDetector
-from backend.scenedetect.stats_manager import StatsManager, FrameMetricRegistered
+from scenedetect.platform import (tqdm, get_and_create_path, get_cv2_imwrite_params, Template)
+from scenedetect.frame_timecode import FrameTimecode
+from scenedetect.video_stream import VideoStream
+from scenedetect.scene_detector import SceneDetector, SparseSceneDetector
+from scenedetect.stats_manager import StatsManager, FrameMetricRegistered
 
 logger = logging.getLogger('pyscenedetect')
 
@@ -712,7 +712,7 @@ class SceneManager:
         cut_list = self._get_cutting_list()
         scene_list = get_scenes_from_cuts(
             cut_list=cut_list, start_pos=self._start_pos, end_pos=self._last_pos + 1)
-        # If we didn't actually scene_detect any cuts, make sure the resulting scene_list is empty
+        # If we didn't actually detect any cuts, make sure the resulting scene_list is empty
         # unless start_in_scene is True.
         if not cut_list and not start_in_scene:
             scene_list = []
@@ -792,7 +792,7 @@ class SceneManager:
         Arguments:
             video: VideoStream obtained from either `scenedetect.open_video`, or by creating
                 one directly (e.g. `scenedetect.backends.opencv.VideoStreamCv2`).
-            duration: Amount of time to scene_detect from current video position. Cannot be
+            duration: Amount of time to detect from current video position. Cannot be
                 specified if `end_time` is set.
             end_time: Time to stop processing at. Cannot be specified if `duration` is set.
             frame_skip: Not recommended except for extremely high framerate videos.
@@ -995,7 +995,7 @@ class SceneManager:
 
         Returns:
             List of FrameTimecode objects denoting the points in time where a scene change
-            was detected in the input video, which can also be passed to external tools
+            was detected in the input video, which can also be passed to external aitools
             for automated splitting of the input into individual scenes.
         """
         # TODO(v0.7): Use the warnings module to turn this into a warning.

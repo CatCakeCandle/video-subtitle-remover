@@ -32,7 +32,7 @@ def drop_path(x, drop_prob=0., training=False):
     """
     if drop_prob == 0. or not training:
         return x
-    keep_prob = paddle.to_tensor(1 - drop_prob)
+    keep_prob = paddle.to_tensor(1 - drop_prob, dtype=x.dtype)
     shape = (paddle.shape(x)[0], ) + (1, ) * (x.ndim - 1)
     random_tensor = keep_prob + paddle.rand(shape, dtype=x.dtype)
     random_tensor = paddle.floor(random_tensor)  # binarize
@@ -147,7 +147,7 @@ class Attention(nn.Layer):
                  dim,
                  num_heads=8,
                  mixer='Global',
-                 HW=[8, 25],
+                 HW=None,
                  local_k=[7, 11],
                  qkv_bias=False,
                  qk_scale=None,
@@ -155,8 +155,9 @@ class Attention(nn.Layer):
                  proj_drop=0.):
         super().__init__()
         self.num_heads = num_heads
-        head_dim = dim // num_heads
-        self.scale = qk_scale or head_dim**-0.5
+        self.dim = dim
+        self.head_dim = dim // num_heads
+        self.scale = qk_scale or self.head_dim**-0.5
 
         self.qkv = nn.Linear(dim, dim * 3, bias_attr=qkv_bias)
         self.attn_drop = nn.Dropout(attn_drop)
@@ -183,13 +184,9 @@ class Attention(nn.Layer):
         self.mixer = mixer
 
     def forward(self, x):
-        if self.HW is not None:
-            N = self.N
-            C = self.C
-        else:
-            _, N, C = x.shape
-        qkv = self.qkv(x).reshape((0, N, 3, self.num_heads, C //
-                                   self.num_heads)).transpose((2, 0, 3, 1, 4))
+        qkv = self.qkv(x).reshape(
+            (0, -1, 3, self.num_heads, self.head_dim)).transpose(
+                (2, 0, 3, 1, 4))
         q, k, v = qkv[0] * self.scale, qkv[1], qkv[2]
 
         attn = (q.matmul(k.transpose((0, 1, 3, 2))))
@@ -198,7 +195,7 @@ class Attention(nn.Layer):
         attn = nn.functional.softmax(attn, axis=-1)
         attn = self.attn_drop(attn)
 
-        x = (attn.matmul(v)).transpose((0, 2, 1, 3)).reshape((0, N, C))
+        x = (attn.matmul(v)).transpose((0, 2, 1, 3)).reshape((0, -1, self.dim))
         x = self.proj(x)
         x = self.proj_drop(x)
         return x
@@ -210,7 +207,7 @@ class Block(nn.Layer):
                  num_heads,
                  mixer='Global',
                  local_mixer=[7, 11],
-                 HW=[8, 25],
+                 HW=None,
                  mlp_ratio=4.,
                  qkv_bias=False,
                  qk_scale=None,
@@ -274,7 +271,9 @@ class PatchEmbed(nn.Layer):
                  img_size=[32, 100],
                  in_channels=3,
                  embed_dim=768,
-                 sub_num=2):
+                 sub_num=2,
+                 patch_size=[4, 4],
+                 mode='pope'):
         super().__init__()
         num_patches = (img_size[1] // (2 ** sub_num)) * \
                       (img_size[0] // (2 ** sub_num))
@@ -282,50 +281,56 @@ class PatchEmbed(nn.Layer):
         self.num_patches = num_patches
         self.embed_dim = embed_dim
         self.norm = None
-        if sub_num == 2:
-            self.proj = nn.Sequential(
-                ConvBNLayer(
-                    in_channels=in_channels,
-                    out_channels=embed_dim // 2,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    act=nn.GELU,
-                    bias_attr=None),
-                ConvBNLayer(
-                    in_channels=embed_dim // 2,
-                    out_channels=embed_dim,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    act=nn.GELU,
-                    bias_attr=None))
-        if sub_num == 3:
-            self.proj = nn.Sequential(
-                ConvBNLayer(
-                    in_channels=in_channels,
-                    out_channels=embed_dim // 4,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    act=nn.GELU,
-                    bias_attr=None),
-                ConvBNLayer(
-                    in_channels=embed_dim // 4,
-                    out_channels=embed_dim // 2,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    act=nn.GELU,
-                    bias_attr=None),
-                ConvBNLayer(
-                    in_channels=embed_dim // 2,
-                    out_channels=embed_dim,
-                    kernel_size=3,
-                    stride=2,
-                    padding=1,
-                    act=nn.GELU,
-                    bias_attr=None))
+        if mode == 'pope':
+            if sub_num == 2:
+                self.proj = nn.Sequential(
+                    ConvBNLayer(
+                        in_channels=in_channels,
+                        out_channels=embed_dim // 2,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        act=nn.GELU,
+                        bias_attr=None),
+                    ConvBNLayer(
+                        in_channels=embed_dim // 2,
+                        out_channels=embed_dim,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        act=nn.GELU,
+                        bias_attr=None))
+            if sub_num == 3:
+                self.proj = nn.Sequential(
+                    ConvBNLayer(
+                        in_channels=in_channels,
+                        out_channels=embed_dim // 4,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        act=nn.GELU,
+                        bias_attr=None),
+                    ConvBNLayer(
+                        in_channels=embed_dim // 4,
+                        out_channels=embed_dim // 2,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        act=nn.GELU,
+                        bias_attr=None),
+                    ConvBNLayer(
+                        in_channels=embed_dim // 2,
+                        out_channels=embed_dim,
+                        kernel_size=3,
+                        stride=2,
+                        padding=1,
+                        act=nn.GELU,
+                        bias_attr=None))
+        elif mode == 'linear':
+            self.proj = nn.Conv2D(
+                1, embed_dim, kernel_size=patch_size, stride=patch_size)
+            self.num_patches = img_size[0] // patch_size[0] * img_size[
+                1] // patch_size[1]
 
     def forward(self, x):
         B, C, H, W = x.shape

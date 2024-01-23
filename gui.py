@@ -15,15 +15,13 @@ import multiprocessing
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import backend.main
-from backend.tools.common_tools import is_image_file
+from backend.aitools.common_tools import is_image_file
 
 
 class SubtitleRemoverGUI:
 
     def __init__(self):
         # 初次运行检查运行环境是否正常
-        from paddle import fluid
-        fluid.install_check.run_check()
         self.font = 'Arial 10'
         self.theme = 'LightBrown12'
         sg.theme(self.theme)

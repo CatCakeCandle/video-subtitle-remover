@@ -18,21 +18,21 @@ from typing import Any, AnyStr, Dict, Optional, Tuple, Type
 
 import click
 
-import scenedetect
+import backend.scenedetect
 
-from scenedetect import open_video, AVAILABLE_BACKENDS
-from scenedetect._scene_loader import SceneLoader
+from backend.scenedetect import open_video, AVAILABLE_BACKENDS
+from backend.scenedetect._scene_loader import SceneLoader
 
-from scenedetect.scene_detector import SceneDetector
-from scenedetect.platform import get_and_create_path, get_cv2_imwrite_params, init_logger
-from scenedetect.frame_timecode import FrameTimecode, MAX_FPS_DELTA
-from scenedetect.video_stream import VideoStream, VideoOpenFailure, FrameRateUnavailable
-from scenedetect.video_splitter import is_mkvmerge_available, is_ffmpeg_available
-from scenedetect.detectors import AdaptiveDetector, ContentDetector, ThresholdDetector
-from scenedetect.stats_manager import StatsManager
-from scenedetect.scene_manager import SceneManager, Interpolation
+from backend.scenedetect.scene_detector import SceneDetector
+from backend.scenedetect.platform import get_and_create_path, get_cv2_imwrite_params, init_logger
+from backend.scenedetect.frame_timecode import FrameTimecode, MAX_FPS_DELTA
+from backend.scenedetect.video_stream import VideoStream, VideoOpenFailure, FrameRateUnavailable
+from backend.scenedetect.video_splitter import is_mkvmerge_available, is_ffmpeg_available
+from backend.scenedetect.detectors import AdaptiveDetector, ContentDetector, ThresholdDetector
+from backend.scenedetect.stats_manager import StatsManager
+from backend.scenedetect.scene_manager import SceneManager, Interpolation
 
-from scenedetect._cli.config import ConfigRegistry, ConfigLoadFailure, CHOICE_MAP
+from backend.scenedetect._cli.config import ConfigRegistry, ConfigLoadFailure, CHOICE_MAP
 
 logger = logging.getLogger('pyscenedetect')
 
@@ -236,7 +236,7 @@ class CliContext:
         logger.debug('Parsing program options.')
         if stats is not None and frame_skip:
             error_strs = [
-                'Unable to scene_detect scenes with stats file if frame skip is not 0.',
+                'Unable to detect scenes with stats file if frame skip is not 0.',
                 '  Either remove the -fs/--frame-skip option, or the -s/--stats file.\n'
             ]
             logger.error('\n'.join(error_strs))
@@ -274,11 +274,11 @@ class CliContext:
 
         # Initialize default detector with values in the config file.
         default_detector = self.config.get_value("global", "default-detector")
-        if default_detector == 'scene_detect-adaptive':
+        if default_detector == 'detect-adaptive':
             self.default_detector = (AdaptiveDetector, self.get_detect_adaptive_params())
-        elif default_detector == 'scene_detect-content':
+        elif default_detector == 'detect-content':
             self.default_detector = (ContentDetector, self.get_detect_content_params())
-        elif default_detector == 'scene_detect-threshold':
+        elif default_detector == 'detect-threshold':
             self.default_detector = (ThresholdDetector, self.get_detect_threshold_params())
         else:
             raise click.BadParameter("Unknown detector type!", param_hint='default-detector')
@@ -308,17 +308,17 @@ class CliContext:
         weights: Optional[Tuple[float, float, float, float]] = None,
         kernel_size: Optional[int] = None,
     ) -> Dict[str, Any]:
-        """Handle scene_detect-content command options and return dict to construct one with."""
+        """Handle detect-content command options and return dict to construct one with."""
         self._ensure_input_open()
 
         if self.drop_short_scenes:
             min_scene_len = 0
         else:
             if min_scene_len is None:
-                if self.config.is_default('scene_detect-content', 'min-scene-len'):
+                if self.config.is_default('detect-content', 'min-scene-len'):
                     min_scene_len = self.min_scene_len.frame_num
                 else:
-                    min_scene_len = self.config.get_value('scene_detect-content', 'min-scene-len')
+                    min_scene_len = self.config.get_value('detect-content', 'min-scene-len')
             min_scene_len = parse_timecode(min_scene_len, self.video_stream.frame_rate).frame_num
 
         if weights is not None:
@@ -328,11 +328,11 @@ class CliContext:
                 logger.debug(str(ex))
                 raise click.BadParameter(str(ex), param_hint='weights')
         return {
-            'weights': self.config.get_value('scene_detect-content', 'weights', weights),
-            'kernel_size': self.config.get_value('scene_detect-content', 'kernel-size', kernel_size),
-            'luma_only': luma_only or self.config.get_value('scene_detect-content', 'luma-only'),
+            'weights': self.config.get_value('detect-content', 'weights', weights),
+            'kernel_size': self.config.get_value('detect-content', 'kernel-size', kernel_size),
+            'luma_only': luma_only or self.config.get_value('detect-content', 'luma-only'),
             'min_scene_len': min_scene_len,
-            'threshold': self.config.get_value('scene_detect-content', 'threshold', threshold),
+            'threshold': self.config.get_value('detect-content', 'threshold', threshold),
         }
 
     def get_detect_adaptive_params(
@@ -346,7 +346,7 @@ class CliContext:
         kernel_size: Optional[int] = None,
         min_delta_hsv: Optional[float] = None,
     ) -> Dict[str, Any]:
-        """Handle scene_detect-adaptive command options and return dict to construct one with."""
+        """Handle detect-adaptive command options and return dict to construct one with."""
         self._ensure_input_open()
 
         # TODO(v0.7): Remove these branches when removing -d/--min-delta-hsv.
@@ -355,21 +355,21 @@ class CliContext:
             if min_content_val is None:
                 min_content_val = min_delta_hsv
         # Handle case where deprecated min-delta-hsv is set, and use it to set min-content-val.
-        if not self.config.is_default("scene_detect-adaptive", "min-delta-hsv"):
-            logger.error('[scene_detect-adaptive] config file option `min-delta-hsv` is deprecated'
+        if not self.config.is_default("detect-adaptive", "min-delta-hsv"):
+            logger.error('[detect-adaptive] config file option `min-delta-hsv` is deprecated'
                          ', use `min-delta-hsv` instead.')
-            if self.config.is_default("scene_detect-adaptive", "min-content-val"):
-                self.config.config_dict["scene_detect-adaptive"]["min-content-val"] = (
-                    self.config.config_dict["scene_detect-adaptive"]["min-deleta-hsv"])
+            if self.config.is_default("detect-adaptive", "min-content-val"):
+                self.config.config_dict["detect-adaptive"]["min-content-val"] = (
+                    self.config.config_dict["detect-adaptive"]["min-deleta-hsv"])
 
         if self.drop_short_scenes:
             min_scene_len = 0
         else:
             if min_scene_len is None:
-                if self.config.is_default("scene_detect-adaptive", "min-scene-len"):
+                if self.config.is_default("detect-adaptive", "min-scene-len"):
                     min_scene_len = self.min_scene_len.frame_num
                 else:
-                    min_scene_len = self.config.get_value("scene_detect-adaptive", "min-scene-len")
+                    min_scene_len = self.config.get_value("detect-adaptive", "min-scene-len")
             min_scene_len = parse_timecode(min_scene_len, self.video_stream.frame_rate).frame_num
 
         if weights is not None:
@@ -380,19 +380,19 @@ class CliContext:
                 raise click.BadParameter(str(ex), param_hint='weights')
         return {
             'adaptive_threshold':
-                self.config.get_value("scene_detect-adaptive", "threshold", threshold),
+                self.config.get_value("detect-adaptive", "threshold", threshold),
             'weights':
-                self.config.get_value("scene_detect-adaptive", "weights", weights),
+                self.config.get_value("detect-adaptive", "weights", weights),
             'kernel_size':
-                self.config.get_value("scene_detect-adaptive", "kernel-size", kernel_size),
+                self.config.get_value("detect-adaptive", "kernel-size", kernel_size),
             'luma_only':
-                luma_only or self.config.get_value("scene_detect-adaptive", "luma-only"),
+                luma_only or self.config.get_value("detect-adaptive", "luma-only"),
             'min_content_val':
-                self.config.get_value("scene_detect-adaptive", "min-content-val", min_content_val),
+                self.config.get_value("detect-adaptive", "min-content-val", min_content_val),
             'min_scene_len':
                 min_scene_len,
             'window_width':
-                self.config.get_value("scene_detect-adaptive", "frame-window", frame_window),
+                self.config.get_value("detect-adaptive", "frame-window", frame_window),
         }
 
     def get_detect_threshold_params(
@@ -402,29 +402,29 @@ class CliContext:
         add_last_scene: bool = None,
         min_scene_len: Optional[str] = None,
     ) -> Dict[str, Any]:
-        """Handle scene_detect-threshold command options and return dict to construct one with."""
+        """Handle detect-threshold command options and return dict to construct one with."""
         self._ensure_input_open()
 
         if self.drop_short_scenes:
             min_scene_len = 0
         else:
             if min_scene_len is None:
-                if self.config.is_default("scene_detect-threshold", "min-scene-len"):
+                if self.config.is_default("detect-threshold", "min-scene-len"):
                     min_scene_len = self.min_scene_len.frame_num
                 else:
-                    min_scene_len = self.config.get_value("scene_detect-threshold", "min-scene-len")
+                    min_scene_len = self.config.get_value("detect-threshold", "min-scene-len")
             min_scene_len = parse_timecode(min_scene_len, self.video_stream.frame_rate).frame_num
 
         return {
                                                                                                 # TODO(v1.0): add_last_scene cannot be disabled right now.
             'add_final_scene':
-                add_last_scene or self.config.get_value("scene_detect-threshold", "add-last-scene"),
+                add_last_scene or self.config.get_value("detect-threshold", "add-last-scene"),
             'fade_bias':
-                self.config.get_value("scene_detect-threshold", "fade-bias", fade_bias),
+                self.config.get_value("detect-threshold", "fade-bias", fade_bias),
             'min_scene_len':
                 min_scene_len,
             'threshold':
-                self.config.get_value("scene_detect-threshold", "threshold", threshold),
+                self.config.get_value("detect-threshold", "threshold", threshold),
         }
 
     def handle_load_scenes(self, input: AnyStr, start_col_name: Optional[str]):

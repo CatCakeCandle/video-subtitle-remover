@@ -14,7 +14,7 @@
 to `ContentDetector` except the threshold isn't fixed, but is a rolling average of adjacent frame
 changes. This can help mitigate false detections in situations such as fast camera motions.
 
-This detector is available from the command-line as the `scene_detect-adaptive` command.
+This detector is available from the command-line as the `detect-adaptive` command.
 """
 
 from logging import getLogger
@@ -53,9 +53,9 @@ class AdaptiveDetector(ContentDetector):
                 new scene (see frame metric adaptive_ratio in stats file).
             min_scene_len: Minimum length of any scene.
             window_width: Size of window (number of frames) before and after each frame to
-                average together in order to scene_detect deviations from the mean. Must be at least 1.
+                average together in order to detect deviations from the mean. Must be at least 1.
             min_content_val: Minimum threshold (float) that the content_val must exceed in order to
-                register as a new scene. This is calculated the same way that `scene_detect-content`
+                register as a new scene. This is calculated the same way that `detect-content`
                 calculates frame score based on `weights`/`luma_only`/`kernel_size`.
             weights: Weight to place on each component when calculating frame score
                 (`content_val` in a statsfile, the value `threshold` is compared against).
@@ -116,7 +116,7 @@ class AdaptiveDetector(ContentDetector):
 
     def process_frame(self, frame_num: int, frame_img: Optional[ndarray]) -> List[int]:
         """ Similar to ThresholdDetector, but using the HSV colour space DIFFERENCE instead
-        of single-frame RGB/grayscale intensity (thus cannot scene_detect slow fades with this method).
+        of single-frame RGB/grayscale intensity (thus cannot detect slow fades with this method).
 
         Arguments:
             frame_num: Frame number of frame that is being passed.

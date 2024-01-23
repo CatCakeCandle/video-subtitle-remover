@@ -38,7 +38,7 @@ from typing import Tuple, Optional, Union
 
 from numpy import ndarray
 
-from backend.scenedetect.frame_timecode import FrameTimecode
+from scenedetect.frame_timecode import FrameTimecode
 
 ##
 ## VideoStream Exceptions

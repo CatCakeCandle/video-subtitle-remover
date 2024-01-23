@@ -155,7 +155,7 @@ def _print_command_help(ctx: click.Context, command: click.Command):
     epilog="""Type "scenedetect [command] --help" for command usage. See https://scenedetect.com/docs/ for online docs."""
 )
 # We cannot make this a required argument otherwise we will reject commands of the form
-# `scenedetect help scene_detect-content` or `scenedetect scene_detect-content --help`.
+# `scenedetect help detect-content` or `scenedetect detect-content --help`.
 @click.option(
     '--input',
     '-i',
@@ -294,7 +294,7 @@ def scenedetect(
 
     {scenedetect_with_video} [detector] [commands]
 
-For [detector] use `scene_detect-adaptive` or `scene_detect-content` to find fast cuts, and `scene_detect-threshold` for fades in/out. If [detector] is not specified, a default detector will be used.
+For [detector] use `detect-adaptive` or `detect-content` to find fast cuts, and `detect-threshold` for fades in/out. If [detector] is not specified, a default detector will be used.
 
 Examples:
 
@@ -308,7 +308,7 @@ Save scene list in CSV format with images at the start, middle, and end of each 
 
 Skip the first 10 seconds of the input video:
 
-    {scenedetect_with_video} time --start 10s scene_detect-content
+    {scenedetect_with_video} time --start 10s detect-content
 
 Show summary of all options and commands:
 
@@ -443,16 +443,16 @@ Note that --end and --duration are mutually exclusive (i.e. only one of the two 
     )
 
 
-@click.command('scene_detect-content', cls=_Command)
+@click.command('detect-content', cls=_Command)
 @click.option(
     '--threshold',
     '-t',
     metavar='VAL',
-    type=click.FloatRange(CONFIG_MAP['scene_detect-content']['threshold'].min_val,
-                          CONFIG_MAP['scene_detect-content']['threshold'].max_val),
+    type=click.FloatRange(CONFIG_MAP['detect-content']['threshold'].min_val,
+                          CONFIG_MAP['detect-content']['threshold'].max_val),
     default=None,
     help='Threshold (float) that frame score must exceed to trigger a cut. Refers to "content_val" in stats file.%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "threshold")),
+    % (USER_CONFIG.get_help_string("detect-content", "threshold")),
 )
 @click.option(
     '--weights',
@@ -461,7 +461,7 @@ Note that --end and --duration are mutually exclusive (i.e. only one of the two 
     default=None,
     metavar='HUE SAT LUM EDGE',
     help='Weights of 4 components used to calculate frame score from (delta_hue, delta_sat, delta_lum, delta_edges).%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "weights")),
+    % (USER_CONFIG.get_help_string("detect-content", "weights")),
 )
 @click.option(
     '--luma-only',
@@ -469,7 +469,7 @@ Note that --end and --duration are mutually exclusive (i.e. only one of the two 
     is_flag=True,
     flag_value=True,
     help='Only use luma (brightness) channel. Useful for greyscale videos. Equivalent to setting "-w 0 0 1 0".%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "luma-only")),
+    % (USER_CONFIG.get_help_string("detect-content", "luma-only")),
 )
 @click.option(
     '--kernel-size',
@@ -478,7 +478,7 @@ Note that --end and --duration are mutually exclusive (i.e. only one of the two 
     type=click.INT,
     default=None,
     help='Size of kernel for expanding detected edges. Must be odd integer greater than or equal to 3. If unset, kernel size is estimated using video resolution.%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "kernel-size")),
+    % (USER_CONFIG.get_help_string("detect-content", "kernel-size")),
 )
 @click.option(
     '--min-scene-len',
@@ -487,8 +487,8 @@ Note that --end and --duration are mutually exclusive (i.e. only one of the two 
     type=click.STRING,
     default=None,
     help='Minimum length of any scene. Overrides global option -m/--min-scene-len. TIMECODE can be specified in frames (-m=100), in seconds with `s` suffix (-m=3.5s), or timecode (-m=00:01:52.778).%s'
-    % ('' if USER_CONFIG.is_default('scene_detect-content', 'min-scene-len') else
-       USER_CONFIG.get_help_string('scene_detect-content', 'min-scene-len')),
+    % ('' if USER_CONFIG.is_default('detect-content', 'min-scene-len') else
+       USER_CONFIG.get_help_string('detect-content', 'min-scene-len')),
 )
 @click.pass_context
 def detect_content_command(
@@ -517,9 +517,9 @@ Once calculated, these components are multiplied by the specified -w/--weights t
 
 Examples:
 
-    {scenedetect_with_video} scene_detect-content
+    {scenedetect_with_video} detect-content
 
-    {scenedetect_with_video} scene_detect-content --threshold 27.5
+    {scenedetect_with_video} detect-content --threshold 27.5
 """
     assert isinstance(ctx.obj, CliContext)
     detector_args = ctx.obj.get_detect_content_params(
@@ -532,7 +532,7 @@ Examples:
     ctx.obj.add_detector(ContentDetector(**detector_args))
 
 
-@click.command('scene_detect-adaptive', cls=_Command)
+@click.command('detect-adaptive', cls=_Command)
 @click.option(
     '--threshold',
     '-t',
@@ -540,7 +540,7 @@ Examples:
     type=click.FLOAT,
     default=None,
     help='Threshold (float) that frame score must exceed to trigger a cut. Refers to "adaptive_ratio" in stats file.%s'
-    % (USER_CONFIG.get_help_string('scene_detect-adaptive', 'threshold')),
+    % (USER_CONFIG.get_help_string('detect-adaptive', 'threshold')),
 )
 @click.option(
     '--min-content-val',
@@ -549,7 +549,7 @@ Examples:
     type=click.FLOAT,
     default=None,
     help='Minimum threshold (float) that "content_val" must exceed to trigger a cut.%s' %
-    (USER_CONFIG.get_help_string('scene_detect-adaptive', 'min-content-val')),
+    (USER_CONFIG.get_help_string('detect-adaptive', 'min-content-val')),
 )
 @click.option(
     '--min-delta-hsv',
@@ -558,7 +558,7 @@ Examples:
     type=click.FLOAT,
     default=None,
     help='[DEPRECATED] Use -c/--min-content-val instead.%s' %
-    (USER_CONFIG.get_help_string('scene_detect-adaptive', 'min-delta-hsv')),
+    (USER_CONFIG.get_help_string('detect-adaptive', 'min-delta-hsv')),
     hidden=True,
 )
 @click.option(
@@ -567,8 +567,8 @@ Examples:
     metavar='VAL',
     type=click.INT,
     default=None,
-    help='Size of window to scene_detect deviations from mean. Represents how many frames before/after the current one to use for mean.%s'
-    % (USER_CONFIG.get_help_string('scene_detect-adaptive', 'frame-window')),
+    help='Size of window to detect deviations from mean. Represents how many frames before/after the current one to use for mean.%s'
+    % (USER_CONFIG.get_help_string('detect-adaptive', 'frame-window')),
 )
 @click.option(
     '--weights',
@@ -576,7 +576,7 @@ Examples:
     type=(float, float, float, float),
     default=None,
     help='Weights of 4 components ("delta_hue", "delta_sat", "delta_lum", "delta_edges") used to calculate "content_val".%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "weights")),
+    % (USER_CONFIG.get_help_string("detect-content", "weights")),
 )
 @click.option(
     '--luma-only',
@@ -584,7 +584,7 @@ Examples:
     is_flag=True,
     flag_value=True,
     help='Only use luma (brightness) channel. Useful for greyscale videos. Equivalent to "--weights 0 0 1 0".%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "luma-only")),
+    % (USER_CONFIG.get_help_string("detect-content", "luma-only")),
 )
 @click.option(
     '--kernel-size',
@@ -593,7 +593,7 @@ Examples:
     type=click.INT,
     default=None,
     help='Size of kernel for expanding detected edges. Must be odd number >= 3. If unset, size is estimated using video resolution.%s'
-    % (USER_CONFIG.get_help_string("scene_detect-content", "kernel-size")),
+    % (USER_CONFIG.get_help_string("detect-content", "kernel-size")),
 )
 @click.option(
     '--min-scene-len',
@@ -602,8 +602,8 @@ Examples:
     type=click.STRING,
     default=None,
     help='Minimum length of any scene. Overrides global option -m/--min-scene-len. TIMECODE can be specified in frames (-m=100), in seconds with `s` suffix (-m=3.5s), or timecode (-m=00:01:52.778).%s'
-    % ('' if USER_CONFIG.is_default('scene_detect-adaptive', 'min-scene-len') else
-       USER_CONFIG.get_help_string('scene_detect-adaptive', 'min-scene-len')),
+    % ('' if USER_CONFIG.is_default('detect-adaptive', 'min-scene-len') else
+       USER_CONFIG.get_help_string('detect-adaptive', 'min-scene-len')),
 )
 @click.pass_context
 def detect_adaptive_command(
@@ -619,13 +619,13 @@ def detect_adaptive_command(
 ):
     """Perform adaptive detection algorithm on input video.
 
-Two-pass algorithm that first calculates frame scores with `scene_detect-content`, and then applies a rolling average when processing the result. This can help mitigate false detections in situations such as camera movement.
+Two-pass algorithm that first calculates frame scores with `detect-content`, and then applies a rolling average when processing the result. This can help mitigate false detections in situations such as camera movement.
 
 Examples:
 
-    {scenedetect_with_video} scene_detect-adaptive
+    {scenedetect_with_video} detect-adaptive
 
-    {scenedetect_with_video} scene_detect-adaptive --threshold 3.2
+    {scenedetect_with_video} detect-adaptive --threshold 3.2
 """
     assert isinstance(ctx.obj, CliContext)
     detector_args = ctx.obj.get_detect_adaptive_params(
@@ -642,26 +642,26 @@ Examples:
     ctx.obj.add_detector(AdaptiveDetector(**detector_args))
 
 
-@click.command('scene_detect-threshold', cls=_Command)
+@click.command('detect-threshold', cls=_Command)
 @click.option(
     '--threshold',
     '-t',
     metavar='VAL',
-    type=click.FloatRange(CONFIG_MAP['scene_detect-threshold']['threshold'].min_val,
-                          CONFIG_MAP['scene_detect-threshold']['threshold'].max_val),
+    type=click.FloatRange(CONFIG_MAP['detect-threshold']['threshold'].min_val,
+                          CONFIG_MAP['detect-threshold']['threshold'].max_val),
     default=None,
     help='Threshold (integer) that frame score must exceed to start a new scene. Refers to "delta_rgb" in stats file.%s'
-    % (USER_CONFIG.get_help_string('scene_detect-threshold', 'threshold')),
+    % (USER_CONFIG.get_help_string('detect-threshold', 'threshold')),
 )
 @click.option(
     '--fade-bias',
     '-f',
     metavar='PERCENT',
-    type=click.FloatRange(CONFIG_MAP['scene_detect-threshold']['fade-bias'].min_val,
-                          CONFIG_MAP['scene_detect-threshold']['fade-bias'].max_val),
+    type=click.FloatRange(CONFIG_MAP['detect-threshold']['fade-bias'].min_val,
+                          CONFIG_MAP['detect-threshold']['fade-bias'].max_val),
     default=None,
     help='Percent (%%) from -100 to 100 of timecode skew of cut placement. -100 indicates the start frame, +100 indicates the end frame, and 0 is the middle of both.%s'
-    % (USER_CONFIG.get_help_string('scene_detect-threshold', 'fade-bias')),
+    % (USER_CONFIG.get_help_string('detect-threshold', 'fade-bias')),
 )
 @click.option(
     '--add-last-scene',
@@ -669,7 +669,7 @@ Examples:
     is_flag=True,
     flag_value=True,
     help='If set and video ends after a fade-out event, generate a final cut at the last fade-out position.%s'
-    % (USER_CONFIG.get_help_string('scene_detect-threshold', 'add-last-scene')),
+    % (USER_CONFIG.get_help_string('detect-threshold', 'add-last-scene')),
 )
 @click.option(
     '--min-scene-len',
@@ -678,8 +678,8 @@ Examples:
     type=click.STRING,
     default=None,
     help='Minimum length of any scene. Overrides global option -m/--min-scene-len. TIMECODE can be specified in frames (-m=100), in seconds with `s` suffix (-m=3.5s), or timecode (-m=00:01:52.778).%s'
-    % ('' if USER_CONFIG.is_default('scene_detect-threshold', 'min-scene-len') else
-       USER_CONFIG.get_help_string('scene_detect-threshold', 'min-scene-len')),
+    % ('' if USER_CONFIG.is_default('detect-threshold', 'min-scene-len') else
+       USER_CONFIG.get_help_string('detect-threshold', 'min-scene-len')),
 )
 @click.pass_context
 def detect_threshold_command(
@@ -695,9 +695,9 @@ Detects fade-in and fade-out events using average pixel values. Resulting cuts a
 
 Examples:
 
-    {scenedetect_with_video} scene_detect-threshold
+    {scenedetect_with_video} detect-threshold
 
-    {scenedetect_with_video} scene_detect-threshold --threshold 15
+    {scenedetect_with_video} detect-threshold --threshold 15
 """
     assert isinstance(ctx.obj, CliContext)
     detector_args = ctx.obj.get_detect_threshold_params(

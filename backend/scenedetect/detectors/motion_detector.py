@@ -17,7 +17,7 @@ transforms, and thresholding."""
 import cv2
 
 # PySceneDetect Library Imports
-from scenedetect.scene_detector import SparseSceneDetector
+from backend.scenedetect.scene_detector import SparseSceneDetector
 
 
 class MotionDetector(SparseSceneDetector):

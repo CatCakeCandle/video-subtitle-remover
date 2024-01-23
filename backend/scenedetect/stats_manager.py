@@ -27,7 +27,7 @@ from logging import getLogger
 from typing import Any, Dict, Iterable, List, Optional, Set, TextIO, Union
 import os.path
 
-from backend.scenedetect.frame_timecode import FrameTimecode
+from scenedetect.frame_timecode import FrameTimecode
 
 logger = getLogger('pyscenedetect')
 

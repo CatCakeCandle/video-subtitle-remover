@@ -24,10 +24,10 @@ from typing import Any, AnyStr, Dict, List, Optional, Tuple, Union
 
 from platformdirs import user_config_dir
 
-from scenedetect.detectors import ContentDetector
-from scenedetect.frame_timecode import FrameTimecode
-from scenedetect.scene_manager import Interpolation
-from scenedetect.video_splitter import DEFAULT_FFMPEG_ARGS
+from backend.scenedetect.detectors import ContentDetector
+from backend.scenedetect.frame_timecode import FrameTimecode
+from backend.scenedetect.scene_manager import Interpolation
+from backend.scenedetect.video_splitter import DEFAULT_FFMPEG_ARGS
 
 VALID_PYAV_THREAD_MODES = ['NONE', 'SLICE', 'FRAME', 'AUTO']
 
@@ -229,7 +229,7 @@ CONFIG_MAP: ConfigDict = {
         'suppress-output': False,
         'threading-mode': 'auto',
     },
-    'scene_detect-adaptive': {
+    'detect-adaptive': {
         'frame-window': 2,
         'kernel-size': KernelSizeValue(-1),
         'luma-only': False,
@@ -240,14 +240,14 @@ CONFIG_MAP: ConfigDict = {
                                                                                    # TODO(v0.7): Remove `min-delta-hsv``.
         'min-delta-hsv': RangeValue(15.0, min_val=0.0, max_val=255.0),
     },
-    'scene_detect-content': {
+    'detect-content': {
         'kernel-size': KernelSizeValue(-1),
         'luma-only': False,
         'min-scene-len': TimecodeValue(0),
         'threshold': RangeValue(27.0, min_val=0.0, max_val=255.0),
         'weights': ScoreWeightsValue(ContentDetector.DEFAULT_COMPONENT_WEIGHTS),
     },
-    'scene_detect-threshold': {
+    'detect-threshold': {
         'add-last-scene': True,
         'fade-bias': RangeValue(0, min_val=-100.0, max_val=100.0),
         'min-scene-len': TimecodeValue(0),
@@ -271,7 +271,7 @@ CONFIG_MAP: ConfigDict = {
     },
     'global': {
         'backend': 'opencv',
-        'default-detector': 'scene_detect-adaptive',
+        'default-detector': 'detect-adaptive',
         'downscale': 0,
         'downscale-method': 'linear',
         'drop-short-scenes': False,
@@ -313,7 +313,7 @@ certain string options are stored in `CHOICE_MAP`."""
 CHOICE_MAP: Dict[str, Dict[str, List[str]]] = {
     'global': {
         'backend': ['opencv', 'pyav', 'moviepy'],
-        'default-detector': ['scene_detect-adaptive', 'scene_detect-content', 'scene_detect-threshold'],
+        'default-detector': ['detect-adaptive', 'detect-content', 'detect-threshold'],
         'downscale-method': [value.name.lower() for value in Interpolation],
         'verbosity': ['debug', 'info', 'warning', 'error', 'none'],
     },

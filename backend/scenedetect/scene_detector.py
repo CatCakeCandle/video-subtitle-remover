@@ -29,7 +29,7 @@ from typing import List, Optional, Tuple
 
 import numpy
 
-from backend.scenedetect.stats_manager import StatsManager
+from scenedetect.stats_manager import StatsManager
 
 
 # pylint: disable=unused-argument, no-self-use
@@ -119,7 +119,7 @@ class SparseSceneDetector(SceneDetector):
 
     This class will be removed in v1.0 and should not be used.
 
-    Unlike dense detectors, sparse detectors scene_detect "events" and return a *pair* of frames,
+    Unlike dense detectors, sparse detectors detect "events" and return a *pair* of frames,
     as opposed to just a single cut.
 
     An example of a SparseSceneDetector is the MotionDetector.

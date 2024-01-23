@@ -13,7 +13,7 @@
 """:class:`ContentDetector` compares the difference in content between adjacent frames against a
 set threshold/score, which if exceeded, triggers a scene cut.
 
-This detector is available from the command-line as the `scene_detect-content` command.
+This detector is available from the command-line as the `detect-content` command.
 """
 from dataclasses import dataclass
 import math
@@ -49,7 +49,7 @@ class ContentDetector(SceneDetector):
     """Detects fast cuts using changes in colour and intensity between frames.
 
     Since the difference between frames is used, unlike the ThresholdDetector,
-    only fast cuts are detected with this method.  To scene_detect slow fades between
+    only fast cuts are detected with this method.  To detect slow fades between
     content scenes still using HSV information, use the DissolveDetector.
     """
 
@@ -186,7 +186,7 @@ class ContentDetector(SceneDetector):
 
     def process_frame(self, frame_num: int, frame_img: numpy.ndarray) -> List[int]:
         """ Similar to ThresholdDetector, but using the HSV colour space DIFFERENCE instead
-        of single-frame RGB/grayscale intensity (thus cannot scene_detect slow fades with this method).
+        of single-frame RGB/grayscale intensity (thus cannot detect slow fades with this method).
 
         Arguments:
             frame_num: Frame number of frame that is being passed.

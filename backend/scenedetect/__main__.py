@@ -15,11 +15,11 @@
 from logging import getLogger
 import sys
 
-from backend.scenedetect._cli import scenedetect
-from backend.scenedetect._cli.context import CliContext
-from backend.scenedetect._cli.controller import run_scenedetect
+from scenedetect._cli import scenedetect
+from scenedetect._cli.context import CliContext
+from scenedetect._cli.controller import run_scenedetect
 
-from backend.scenedetect.platform import logging_redirect_tqdm, FakeTqdmLoggingRedirect
+from scenedetect.platform import logging_redirect_tqdm, FakeTqdmLoggingRedirect
 
 
 def main():

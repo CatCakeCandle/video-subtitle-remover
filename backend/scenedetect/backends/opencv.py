@@ -26,9 +26,9 @@ import os.path
 import cv2
 from numpy import ndarray
 
-from backend.scenedetect.frame_timecode import FrameTimecode, MAX_FPS_DELTA
-from backend.scenedetect.platform import get_file_name
-from backend.scenedetect.video_stream import VideoStream, SeekError, VideoOpenFailure, FrameRateUnavailable
+from scenedetect.frame_timecode import FrameTimecode, MAX_FPS_DELTA
+from scenedetect.platform import get_file_name
+from scenedetect.video_stream import VideoStream, SeekError, VideoOpenFailure, FrameRateUnavailable
 
 logger = getLogger('pyscenedetect')
 

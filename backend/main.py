@@ -6,16 +6,18 @@ import threading
 import cv2
 import sys
 
+
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import config
-from backend.tools.common_tools import is_video_or_image, is_image_file
-from backend.scenedetect import scene_detect
+from backend.aitools.common_tools import is_video_or_image, is_image_file
+from backend.scenedetect import detect
 from backend.scenedetect.detectors import ContentDetector
 from backend.inpaint.sttn_inpaint import STTNInpaint, STTNVideoInpaint
 from backend.inpaint.lama_inpaint import LamaInpaint
 from backend.inpaint.video_inpaint import VideoInpaint
-from backend.tools.inpaint_tools import create_mask, batch_generator
+from backend.aitools.inpaint_tools import create_mask, batch_generator
+from backend.aitools.infer import utility,predict_det
 import importlib
 import platform
 import tempfile
@@ -24,8 +26,6 @@ import multiprocessing
 from shapely.geometry import Polygon
 import time
 from tqdm import tqdm
-from tools.infer import utility
-from tools.infer.predict_det import TextDetector
 
 
 class SubtitleDetect:
@@ -39,7 +39,7 @@ class SubtitleDetect:
         args = utility.parse_args()
         args.det_algorithm = 'DB'
         args.det_model_dir = config.DET_MODEL_PATH
-        self.text_detector = TextDetector(args)
+        self.text_detector = predict_det.TextDetector(args)
         self.video_path = video_path
         self.sub_area = sub_area
 
@@ -150,7 +150,7 @@ class SubtitleDetect:
         获取发生场景切换的帧号
         """
         scene_div_frame_no_list = []
-        scene_list = scene_detect(v_path, ContentDetector())
+        scene_list = detect(v_path, ContentDetector())
         for scene in scene_list:
             start, end = scene
             if start.frame_num == 0:
